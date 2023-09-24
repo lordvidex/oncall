@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+  oncall-prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - iris
+    depends_on:
+      - oncall-web
+    ports:
+      - "9090:9090"
+    
   oncall-web:
     build: .
     hostname: oncall
