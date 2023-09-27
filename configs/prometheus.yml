@@ -24,3 +24,7 @@ scrape_configs:
       - regex: __meta_docker_container_label_prometheus_(.+)
         action: labelmap
         replacement: $1
+      # keep sources with port  8090
+      - source_labels: [__meta_docker_port_private]
+        regex: ^8090$
+        action: keep
