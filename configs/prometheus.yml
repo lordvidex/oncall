@@ -3,14 +3,14 @@ global:
   scrape_timeout: "10s"
   evaluation_interval: "1m"
 scrape_configs:
+  - job_name: "node"
+    static_configs:
+      - targets:
+          - "node-exporter:9100"
   - job_name: "prometheus"
     static_configs:
       - targets:
-        - "localhost:9090"
-  # - job_name: "oncall"
-  #   static_configs:
-  #     - targets:
-  #       - "oncall-web:8090"
+          - "localhost:9090"
 
   - job_name: "docker-containers"
     docker_sd_configs:

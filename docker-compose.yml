@@ -1,6 +1,42 @@
-version: '3'
+version: "3"
 
 services:
+  count-containers:
+    container_name: count-containers
+    build:
+      context: ./ops/scripts/count-containers
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - textfile:/tmp/textfile/
+    depends_on:
+      - oncall-web
+      - oncall-mysql
+      - node-exporter
+      - oncall-prometheus
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    pid: host
+    user: root
+    restart: unless-stopped
+    command:
+      - "--path.rootfs=/host"
+      - "--no-collector.nfs"
+      - "--no-collector.zfs"
+      - "--no-collector.mdadm"
+      - "--no-collector.bonding"
+      - "--no-collector.selinux"
+      - "--no-collector.conntrack"
+      - "--no-collector.hwmon"
+      - "--no-collector.fibrechannel"
+      - "--collector.textfile.directory=/textfile/"
+
+    volumes:
+      - "/:/host:ro,rslave"
+      - textfile:/textfile
+    ports:
+      - "9100:9100"
+    networks:
+      - iris
   oncall-prometheus:
     image: prom/prometheus
     user: root
@@ -11,17 +47,15 @@ services:
       - iris
     ports:
       - "9090:9090"
-    
+
   oncall-web:
     build: .
     hostname: oncall
     labels:
       - prometheus-job=oncall-web-auto
     ports:
-      - "8080-8081:8080"
-      - "8090-8091:8090"
-    deploy:
-      replicas: 2     
+      - "8080:8080"
+      - "8090:8090"
     environment:
       - DOCKER_DB_BOOTSTRAP=1
       - IRIS_API_HOST=iris
@@ -29,7 +63,7 @@ services:
       - ./configs/config.docker.yaml:/home/oncall/config/config.yaml
     networks:
       - iris
-  
+
   oncall-mysql:
     hostname: oncall-mysql
     image: mysql:5.7
@@ -41,3 +75,7 @@ services:
 networks:
   iris:
     name: iris
+volumes:
+  textfile:
+
+
