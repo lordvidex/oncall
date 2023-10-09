@@ -28,3 +28,48 @@ scrape_configs:
       - source_labels: [__meta_docker_port_private]
         regex: ^8090$
         action: keep
+  - job_name: "blackbox_http"
+    scrape_interval: "30s"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - "oncall-web:8080"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+  - job_name: "blackbox_tcp"
+    scrape_interval: "30s"
+    metrics_path: /probe
+    params:
+      module: [tcp]
+    static_configs:
+      - targets:
+          - "oncall-web:8080"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+  - job_name: "blackbox_icmp"
+    scrape_interval: "30s"
+    metrics_path: /probe
+    params:
+      module: [icmp_ipv4]
+    static_configs:
+      - targets:
+          - "oncall-web"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

@@ -1,0 +1,15 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 5s
+  tcp:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: ip4
+  icmp_ipv4:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      ttl: 5
+      preferred_ip_protocol: ip4

@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+  # one shot container that writes metrics for the number of containers contained in this docker compose instance
   count-containers:
     container_name: count-containers
     build:
@@ -13,6 +14,20 @@ services:
       - oncall-mysql
       - node-exporter
       - oncall-prometheus
+
+  # exports blackbox metrics for checking network status
+  blackbox-exporter:
+    image: quay.io/prometheus/blackbox-exporter:latest
+    ports:
+      - "9115:9115"
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
+    volumes:
+      - ./configs/blackbox.yml:/etc/blackbox_exporter/config.yml
+    networks:
+      - iris
+
+  # node-exporter exposes metrics for the docker instance
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
     pid: host
@@ -29,7 +44,6 @@ services:
       - "--no-collector.hwmon"
       - "--no-collector.fibrechannel"
       - "--collector.textfile.directory=/textfile/"
-
     volumes:
       - "/:/host:ro,rslave"
       - textfile:/textfile
@@ -37,6 +51,8 @@ services:
       - "9100:9100"
     networks:
       - iris
+
+  # prom instance
   oncall-prometheus:
     image: prom/prometheus
     user: root
@@ -48,6 +64,7 @@ services:
     ports:
       - "9090:9090"
 
+  # oncall web service [main]
   oncall-web:
     build: .
     hostname: oncall
@@ -64,6 +81,7 @@ services:
     networks:
       - iris
 
+  # oncall web mysql database
   oncall-mysql:
     hostname: oncall-mysql
     image: mysql:5.7
@@ -77,5 +95,3 @@ networks:
     name: iris
 volumes:
   textfile:
-
-
