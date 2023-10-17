@@ -1,6 +1,23 @@
 version: "3"
 
 services:
+  # custom exporter that exposes metrics relating to business logic of oncall-web
+  oncall-roster-exporter:
+    image: lordvidex/oncall-roster-exporter:latest
+    networks:
+      - iris
+    restart: unless-stopped
+    ports:
+      - "9213:8090"
+    depends_on:
+      - oncall-web
+    labels:
+      - prometheus-job=oncall-roster-exporter
+    command:
+      - "-oncall=http://oncall-web:8080"
+      - "-scrape-duration=30s"
+      - "-port=8090"
+      # - "-silent" # remove logs
   # one shot container that writes metrics for the number of containers contained in this docker compose instance
   count-containers:
     container_name: count-containers
@@ -70,9 +87,11 @@ services:
     hostname: oncall
     labels:
       - prometheus-job=oncall-web-auto
+      - co.elastic.logs/enabled=true
     ports:
       - "8080:8080"
       - "8090:8090"
+    restart: unless-stopped
     environment:
       - DOCKER_DB_BOOTSTRAP=1
       - IRIS_API_HOST=iris
@@ -85,10 +104,14 @@ services:
   oncall-mysql:
     hostname: oncall-mysql
     image: mysql:5.7
+    labels:
+      - co.elastic.logs/enabled=true
     environment:
       - MYSQL_ROOT_PASSWORD=1234
     networks:
       - iris
+
+  # ELK
 
 networks:
   iris:
