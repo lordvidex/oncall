@@ -1,7 +1,10 @@
 global:
   resolve_timeout: 5m
+templates:
+  - "/etc/alertmanager/alerts.tmpl"
 route:
-  receiver: webhook_receiver
+  receiver: telegram_receiver
+  group_by: ["alertname", "severity"]
 
 receivers:
   - name: webhook_receiver
@@ -10,5 +13,7 @@ receivers:
         send_resolved: false
   - name: telegram_receiver
     telegram_configs:
-      - chat_id: 123456789
-        send_resolved: false
+      - chat_id: -4068393056
+        bot_token: 5930309571:AAFN21Nj2z-0wZY-1h2ob6-3FsvH4qRu8P0
+        send_resolved: true
+        message: '{{ template "telegram.lordvidex.message" . }}'

@@ -108,6 +108,7 @@ services:
     user: root
     volumes:
       - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/rules.yml:/etc/prometheus/rules.yml
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - iris
@@ -124,6 +125,7 @@ services:
       - "9093:9093"
     volumes:
       - ./configs/alertmanager.yml:/etc/alertmanager/config.yml
+      - ./configs/alerts.tmpl:/etc/alertmanager/alerts.tmpl
     command:
       - "--config.file=/etc/alertmanager/config.yml"
   grafana:
