@@ -13,6 +13,12 @@ scrape_configs:
       - targets:
           - "localhost:9090"
 
+  - job_name: "sla-prober"
+    metrics_path: /probe
+    static_configs:
+      - targets:
+          - "sla-prober:8091"
+
   - job_name: "docker-containers"
     docker_sd_configs:
       - host: unix:///var/run/docker.sock # You can also use http/https to connect to the Docker daemon.

@@ -1,6 +1,24 @@
 version: "3"
 
 services:
+  sla-prober:
+    image: lordvidex/oncall-sla-prober:latest
+    networks:
+      - iris
+    restart: unless-stopped
+    ports:
+      - "9214:8091"
+    depends_on:
+      - oncall-web
+    labels:
+      - prometheus-job=oncall-sla-prober
+    volumes:
+      - ./configs/roster.yaml:/roster.yaml
+    command:
+      - "-oncall=http://oncall-web:8080"
+      - "-scrape-duration=30s"
+      - "-port=8091"
+      - "-f=/roster.yaml"
   # custom exporter that exposes metrics relating to business logic of oncall-web
   oncall-roster-exporter:
     image: lordvidex/oncall-roster-exporter:latest
@@ -81,6 +99,18 @@ services:
     ports:
       - "9090:9090"
 
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - iris
+      - elastic
+    volumes:
+      - ./configs/grafana-sources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana:/var/lib/grafana/
+
   # oncall web service [main]
   oncall-web:
     build: .
@@ -116,5 +146,8 @@ services:
 networks:
   iris:
     name: iris
+  elastic:
+    external: true
 volumes:
   textfile:
+  grafana:
