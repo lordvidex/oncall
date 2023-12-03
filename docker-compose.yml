@@ -1,6 +1,21 @@
 version: "3"
 
 services:
+  sla-checker:
+    image: lordvidex/oncall-sla-checker:latest
+    networks:
+      - iris
+    restart: unless-stopped
+    depends_on:
+      - oncall-prometheus
+      - sla-db
+    volumes:
+      - ./configs/sla.yaml:/sla.yaml
+    environment:
+      DATABASE_URL: postgresql://postgres:1234@sla-db:5432/sla
+      LOG_LEVEL: debug
+      METRICS_FILE: /sla.yaml
+
   sla-prober:
     image: lordvidex/oncall-sla-prober:latest
     networks:
@@ -140,6 +155,17 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
     networks:
       - iris
+  sla-db:
+    hostname: sla-db
+    container_name: sla-db
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=sla
+      - POSTGRES_USER=postgres
+    networks:
+      - iris
+    
 
   # ELK
 
