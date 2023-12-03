@@ -113,7 +113,19 @@ services:
       - iris
     ports:
       - "9090:9090"
+    depends_on:
+      - alertmanager
 
+  alertmanager:
+    image: prom/alertmanager
+    networks:
+      - iris
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./configs/alertmanager.yml:/etc/alertmanager/config.yml
+    command:
+      - "--config.file=/etc/alertmanager/config.yml"
   grafana:
     image: grafana/grafana
     restart: unless-stopped

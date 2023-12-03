@@ -1,0 +1,14 @@
+global:
+  resolve_timeout: 5m
+route:
+  receiver: webhook_receiver
+
+receivers:
+  - name: webhook_receiver
+    webhook_configs:
+      - url: https://webhook.site/7052599f-9bb7-4863-966f-0c7d82a13986
+        send_resolved: false
+  - name: telegram_receiver
+    telegram_configs:
+      - chat_id: 123456789
+        send_resolved: false
