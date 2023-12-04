@@ -5,7 +5,7 @@ groups:
         expr: up{job=~"blackbox.*"} == 0
         for: 0m
         labels:
-          severity: critical
+          severity: warning
         annotations:
           summary: BlackBox Exporter Down (job {{ $labels.job }})
           description: "Node Exporter is down\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
@@ -13,7 +13,7 @@ groups:
         expr: probe_success == 0
         for: 0m
         labels:
-          severity: critical
+          severity: warning
         annotations:
           summary: Blackbox probe failed (instance {{ $labels.instance }})
           description: "Probe failed\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

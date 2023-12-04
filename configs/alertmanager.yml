@@ -3,8 +3,39 @@ global:
 templates:
   - "/etc/alertmanager/alerts.tmpl"
 route:
-  receiver: telegram_receiver
+  receiver: webhook_receiver
   group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 2m
+  repeat_interval: 4h
+  routes:
+    - receiver: telegram_receiver
+      matchers:
+        - severity="critical"
+    - receiver: telegram_receiver
+      group_wait: 5s
+      group_interval: 10s
+      repeat_interval: 1h
+      matchers:
+        - severity="warning"
+      active_time_intervals:
+        - work_hour
+
+time_intervals:
+  - name: work_hour
+    time_intervals:
+      - times:
+          - start_time: 09:00
+          - end_time: 17:00
+        weekdays: ["monday:friday"]
+        location: 'Europe/Moscow'
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ["alertname"]
 
 receivers:
   - name: webhook_receiver
