@@ -8,7 +8,7 @@
 🏷 Labels:
 {{ range .Labels.SortedPairs }}  <i>{{ .Name }}</i>: <code>{{ .Value }}</code>
 {{ end }}{{ end }}
-🛠 <a href="https://lordvidex.app/">Grafana</a> 💊 <a href="https://yucca.app/">Alertmanager</a> 💊 <a href="https://yucca.app/">Prometheus</a> 🛠
+🛠 <a href="http://158.160.118.124:9090/alerts?search=">Rules</a> 💊 <a href="http://158.160.118.124:9093/#/alerts">Alertmanager</a> 💊 <a href="http://158.160.118.124:9090/alerts/">Prometheus</a> 🛠
 {{ end }}
 
 {{ define "telegram.lordvidex.message" }}
@@ -21,3 +21,4 @@
 {{ template "__lordvidex_text_alert_list" .Alerts.Resolved }}
 {{ end }}
 {{ end }}
+
