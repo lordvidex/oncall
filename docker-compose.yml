@@ -82,12 +82,37 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx-logs/:/var/log/nginx/
     depends_on:
       - oncall-web  
     ports:
       - "8088:8080"
     networks:
         - iris
+  telegraf:
+    image: telegraf
+    container_name: telegraf
+    restart: always
+    volumes:
+      - ./configs/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./nginx-logs/:/var/log/nginx/
+    depends_on:
+      - nginx
+    ports:
+      - "8125:8125"
+    networks:
+      - iris
+  nginx-prometheus:
+    image: nginx/nginx-prometheus-exporter:1.0.0
+    command:
+      - "--nginx.scrape-uri=http://nginx:8080/nginx_status"
+    ports:
+      - "9113:9113"
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    networks:
+      - iris
   # node-exporter exposes metrics for the docker instance
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
