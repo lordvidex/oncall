@@ -24,17 +24,17 @@ services:
     ports:
       - "9214:8091"
     depends_on:
-      - oncall-web
+      - oncall-a
     labels:
       - prometheus-job=oncall-sla-prober
     volumes:
       - ./configs/roster.yaml:/roster.yaml
     command:
-      - "-oncall=http://oncall-web:8080"
+      - "-oncall=http://oncall-a:8080"
       - "-scrape-duration=30s"
       - "-port=8091"
       - "-f=/roster.yaml"
-  # custom exporter that exposes metrics relating to business logic of oncall-web
+  # custom exporter that exposes metrics relating to business logic of oncall-a
   oncall-roster-exporter:
     image: lordvidex/oncall-roster-exporter:latest
     networks:
@@ -43,11 +43,11 @@ services:
     ports:
       - "9213:8090"
     depends_on:
-      - oncall-web
+      - oncall-a
     labels:
       - prometheus-job=oncall-roster-exporter
     command:
-      - "-oncall=http://oncall-web:8080"
+      - "-oncall=http://oncall-a:8080"
       - "-scrape-duration=30s"
       - "-port=8090"
       # - "-silent" # remove logs
@@ -60,7 +60,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - textfile:/tmp/textfile/
     depends_on:
-      - oncall-web
+      - oncall-a
       - oncall-mysql
       - node-exporter
       - oncall-prometheus
@@ -84,7 +84,8 @@ services:
       - ./configs/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx-logs/:/var/log/nginx/
     depends_on:
-      - oncall-web  
+      - oncall-a  
+      - oncall-b
     ports:
       - "8088:8080"
     networks:
@@ -176,18 +177,16 @@ services:
       - ./configs/grafana-sources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana:/var/lib/grafana/
 
-  # oncall web service [main]
-  oncall-web:
+  # oncall instance A
+  oncall-a:
     build: .
-    hostname: oncall
+    hostname: oncall-a
     labels:
       - prometheus-job=oncall-web-auto
       - co.elastic.logs/enabled=true
-    deploy:
-      replicas: 2
     ports:
-      - "8080-8081:8080"
-      - "8090-8091:8090"
+      - "8081:8080"
+      - "8090:8090"
     restart: unless-stopped
     environment:
       - DOCKER_DB_BOOTSTRAP=1
@@ -197,6 +196,24 @@ services:
     networks:
       - iris
 
+  # oncall instance B
+  oncall-b:
+    build: .
+    hostname: oncall-b
+    labels:
+      - prometheus-job=oncall-web-auto-B
+      - co.elastic.logs/enabled=true
+    ports:
+      - "8082:8080"
+      - "8091:8090"
+    restart: unless-stopped
+    environment:
+      - DOCKER_DB_BOOTSTRAP=1
+      - IRIS_API_HOST=iris
+    volumes:
+      - ./configs/config.docker.yaml:/home/oncall/config/config.yaml
+    networks:
+      - iris
   # oncall web mysql database
   oncall-mysql:
     hostname: oncall-mysql
